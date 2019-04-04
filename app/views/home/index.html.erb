@@ -1,0 +1,60 @@
+<div class="container" style="margin-top:40px">
+  <div class="col-md-8 offset-md-2">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3 class="panel-title"><strong>Hello <%= @user.name %> (<%= @user.email %>)!</strong></h3></div>
+      <div class="panel-body">
+          <% flash.each do |key, value| %>
+            <div class="alert alert-<%= key || 'success' %>"><%= value %></div>
+          <% end %>
+        <%= form_tag("/create_answer", method: "post") do |f| %>
+          <% if @questions.any? %>
+            <h5>Please answer questions below:</h5>
+            <% @questions.each do |question| %>
+              <div class="form-group">
+                <%= label_tag "question_#{question[:id]}", "Question #{question[:id]}: #{question[:title]}" %><br />
+                <% if question[:id] == 1 %>
+                  <%= text_area_tag 'answer_question_1', '', class: "form-control", required: true %>
+                <% end %>
+                <% if question[:id] == 2 %>
+                  <% question[:options].each do |option| %>
+                    <%= radio_button_tag "answer_question_2", option, required: true %>
+                    <%= label_tag "answer_question_2_#{option}", option %>
+                    <br>
+                  <% end %>
+                <% end %>
+                <% if question[:id] == 3 %>
+                  <%= select_tag 'answer_question_3', options_for_select(question[:options]), { class: "form-control" } %>
+                <% end %>
+              </div>
+            <% end %>
+            <%= submit_tag "Send answers", class: 'btn btn-primary' %>
+          <% else %>
+            <div class="alert alert-info" role="alert">
+              No questions to answer this month. Come back next one!
+            </div>
+          <% end %>
+        <% end %>
+        <% if @user.get_last_answer.present? %>
+          <h5>Last questions answered on <%= @user.get_last_answer.created_at.strftime("%F") %>:</h5>
+          <dl class="row">
+            <dt class="col-sm-3">Question 1</dt>
+            <dd class="col-sm-9"><%= @user.get_last_answer_by_question(1).answer %></dd>
+
+            <dt class="col-sm-3">Question 2</dt>
+            <dd class="col-sm-9"><%= @user.get_last_answer_by_question(2).answer %></dd>
+
+            <dt class="col-sm-3">Question 3</dt>
+            <dd class="col-sm-9"><%= @user.get_last_answer_by_question(3).answer %></dd>
+          </dl>
+        <% end %>
+        <div style="margin-top:80px">
+          <% if @user.admin? %>
+            <%= link_to('View all answers', answers_path) %>
+            <br>
+          <% end %>
+          <%= link_to('Logout', destroy_user_session_path, method: :delete) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
